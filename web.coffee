@@ -19,6 +19,7 @@ app.post "/file", (req, res) ->
   headers = {
     'Content-Length': req.files.data.size
     'Content-Type': req.files.data.type
+    'x-amz-acl': 'public-read'
   }
   knox.putStream fs.createReadStream(req.files.data.path), req.files.data.name, headers, (err) ->
     res.send "ok"
