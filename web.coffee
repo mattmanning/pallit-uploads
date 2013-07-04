@@ -1,37 +1,27 @@
 coffee   = require("coffee-script")
-crypto   = require("crypto")
 express  = require("express")
 fs       = require("fs")
-log      = require("./lib/logger")
-storage  = require("./lib/storage").init()
 util     = require("util")
 
-require("http").globalAgent.maxSockets = 50
+knox = require('knox').createClient
+  key:    process.env.AWS_ACCESS_KEY_ID
+  secret: process.env.AWS_SECRET_ACCESS_KEY
+  bucket: process.env.S3_BUCKET
 
-express.logger.format "method", (req, res) ->
-  req.method.toLowerCase()
+app = express()
 
-express.logger.format "url", (req, res) ->
-  req.url.replace('"', '&quot')
-
-express.logger.format "user-agent", (req, res) ->
-  (req.headers["user-agent"] || "").replace('"', '')
-
-app = express(
-  express.logger
-    buffer: false
-    format: "subject=\"http\" method=\":method\" url=\":url\" status=\":status\" elapsed=\":response-time\" from=\":remote-addr\" agent=\":user-agent\""
-  express.bodyParser())
+app.use(express.bodyParser())
 
 app.get "/", (req, res) ->
   res.send "ok"
 
-app.post "/file/:hash", (req, res) ->
-  log "api.file.post", hash:req.params.hash, (logger) ->
-    storage.verify_hash req.files.data.path, req.params.hash, (err) ->
-      return res.send(err, 403) if err
-      storage.create_stream "/hash/#{req.params.hash}", fs.createReadStream(req.files.data.path), (err) ->
-        res.send "ok"
+app.post "/file", (req, res) ->
+  headers = {
+    'Content-Length': req.files.data.size
+    'Content-Type': req.files.data.type
+  }
+  knox.putStream fs.createReadStream(req.files.data.path), req.files.data.name, headers, (err) ->
+    res.send "ok"
 
 port = process.env.PORT || 5000
 
