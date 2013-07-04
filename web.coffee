@@ -17,7 +17,7 @@ express.logger.format "url", (req, res) ->
 express.logger.format "user-agent", (req, res) ->
   (req.headers["user-agent"] || "").replace('"', '')
 
-app = express.createServer(
+app = express(
   express.logger
     buffer: false
     format: "subject=\"http\" method=\":method\" url=\":url\" status=\":status\" elapsed=\":response-time\" from=\":remote-addr\" agent=\":user-agent\""
