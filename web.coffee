@@ -1,7 +1,7 @@
-coffee   = require("coffee-script")
-express  = require("express")
-fs       = require("fs")
-util     = require("util")
+coffee    = require("coffee-script")
+express   = require("express")
+fs        = require("fs")
+util      = require("util")
 
 knox = require('knox').createClient
   key:    process.env.AWS_ACCESS_KEY_ID
@@ -9,20 +9,35 @@ knox = require('knox').createClient
   bucket: process.env.S3_BUCKET
 
 app = express()
-
-app.use(express.bodyParser())
+app.use(express.bodyParser({'defer': true}))
 
 app.get "/", (req, res) ->
   res.send "ok"
 
-app.post "/file", (req, res) ->
-  headers = {
-    'Content-Length': req.files.data.size
-    'Content-Type': req.files.data.type
-    'x-amz-acl': 'public-read'
-  }
-  knox.putStream fs.createReadStream(req.files.data.path), req.files.data.name, headers, (err) ->
-    res.send "ok"
+app.post '/file', (req, res) ->
+  # get the node-formidable form
+  form = req.form
+  form.onPart = (part) ->
+    if (!part.filename)
+      # let formidable handle all non-file parts
+      form.handlePart(part)
+
+    @_flushing++
+    progress = 0
+
+    headers = {
+      'Content-Type': part.mime
+      'Content-Length': '5660375'
+    }
+
+    knox.putStream part, part.filename, headers, (err) ->
+      res.send "ok"
+
+    part.on('data', (buffer) ->
+      console.log(progress += buffer.length))
+
+    part.on('end', () ->
+      @_flushing--)
 
 port = process.env.PORT || 5000
 
