@@ -9,7 +9,7 @@
     <form enctype="multipart/form-data" method="post" name="upload" action="http://localhost:5000/file">
       <div>
         <div><label for="data">Please select file:</label></div>
-        <div><input type="file" name="data" id="data" /></div>
+        <div><input type="file" name="data" id="data" onchange="fileSelected();" /></div>
       </div>
       <div>
         <input type="submit" value="Upload" />

@@ -1,7 +1,8 @@
-coffee    = require("coffee-script")
-express   = require("express")
-fs        = require("fs")
-util      = require("util")
+coffee        = require("coffee-script")
+express       = require("express")
+fs            = require("fs")
+util          = require("util")
+StringDecoder = require('string_decoder').StringDecoder
 
 knox = require('knox').createClient
   key:    process.env.AWS_ACCESS_KEY_ID
@@ -17,17 +18,22 @@ app.get "/", (req, res) ->
 app.post '/file', (req, res) ->
   # get the node-formidable form
   form = req.form
+  file_length = ''
   form.onPart = (part) ->
-    if (!part.filename)
-      # let formidable handle all non-file parts
-      form.handlePart(part)
+    if (!part.filename && (part.name == 'fsize'))
+      value = ''
+      decoder = new StringDecoder(this.encoding);
+      part.on('data', (buffer) ->
+        value += decoder.write(buffer))
+      part.on('end', () ->
+        file_length = value)
+      return
 
-    @_flushing++
     progress = 0
 
     headers = {
       'Content-Type': part.mime
-      'Content-Length': '5660375'
+      'Content-Length': file_length
     }
 
     knox.putStream part, part.filename, headers, (err) ->
@@ -36,8 +42,7 @@ app.post '/file', (req, res) ->
     part.on('data', (buffer) ->
       console.log(progress += buffer.length))
 
-    part.on('end', () ->
-      @_flushing--)
+    part.on('end', () ->)
 
 port = process.env.PORT || 5000
 
