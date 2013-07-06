@@ -2,13 +2,14 @@
 <html lang="en" >
   <head>
     <meta charset="utf-8" />
+    <script src="upload.js"></script>
     <title>File upload</title>
   </head>
   <body>
-    <form enctype="multipart/form-data" method="post" action="http://localhost:5000/file">
+    <form enctype="multipart/form-data" method="post" name="upload" action="http://localhost:5000/file">
       <div>
         <div><label for="data">Please select file:</label></div>
-        <div><input type="file" name="data" id="data" /></div>
+        <div><input type="file" name="data" id="data" onchange="fileSelected();" /></div>
       </div>
       <div>
         <input type="submit" value="Upload" />
