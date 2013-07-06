@@ -36,11 +36,18 @@ app.post '/file', (req, res) ->
       'Content-Length': file_length
     }
 
-    knox.putStream part, part.filename, headers, (err) ->
-      res.send "ok"
+    s3req = knox.putStream part, part.filename, headers, (err, s3res) ->
+      throw err if err
+      console.log(s3res.statusCode)
+      console.log(s3res.headers)
+      s3res.pipe(process.stdout, {end: false})
+      console.error('s3 callback', s3req.url)
+      res.status(201).send(s3req.url)
 
-    part.on('data', (buffer) ->
-      console.log(progress += buffer.length))
+    s3req.on('progress', console.log);
+
+    part.on('data', (buffer) ->)
+      # console.log(progress += buffer.length))
 
     part.on('end', () ->)
 
