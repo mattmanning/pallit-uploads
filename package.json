@@ -7,7 +7,8 @@
     "express":       "3.3.x",
     "knox":          "0.8.3",
     "node-uuid":     "1.4.x",
-    "nodemon":       "0.7.8"
+    "nodemon":       "0.7.8",
+    "socket.io":     "0.9.16"
   },
 
   "engines": {
