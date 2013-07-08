@@ -13,6 +13,11 @@ http    = require('http')
 server  = http.createServer(app)
 io      = require('socket.io').listen(server)
 
+io.configure(() ->
+  io.set("transports", ["xhr-polling"])
+  io.set("polling duration", 10)
+)
+
 server.listen(process.env.PORT || 5000)
 
 knox = require('knox').createClient
