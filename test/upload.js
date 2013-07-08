@@ -28,3 +28,18 @@ function addFileSize() {
 function fileSelected() {
   addFileSize();
 }
+
+var upload_id;
+
+var socket = io.connect('http://localhost:5000');
+
+socket.on('upload_id', function(data) {
+  upload_id = data;
+  document.forms['upload'].action = ('http://localhost:5000/file/' + upload_id);
+});
+
+socket.on('progress', function(data) {
+  progress = document.getElementById('progress');
+  progress.innerHTML = data.percent;
+});
+
