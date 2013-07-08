@@ -1,10 +1,12 @@
 coffee        = require("coffee-script")
 express       = require("express")
 fs            = require("fs")
-util          = require("util")
 StringDecoder = require('string_decoder').StringDecoder
+util          = require("util")
+uuid          = require('node-uuid')
 
 app = express()
+
 app.use(express.bodyParser({'defer': true}))
 
 http    = require('http')
@@ -19,12 +21,16 @@ knox = require('knox').createClient
   bucket: process.env.S3_BUCKET
 
 io.sockets.on('connection', (socket) ->
+  upload_id = uuid.v4()
+  socket.join(upload_id)
+  socket.emit('upload_id', upload_id)
   console.log('A socket connected!'))
 
 app.get "/", (req, res) ->
   res.send "ok"
 
-app.post '/file', (req, res) ->
+app.post '/file/:upload_id', (req, res) ->
+  upload_id = req.params.upload_id
   # get the node-formidable form
   form = req.form
   file_length = ''
@@ -40,6 +46,8 @@ app.post '/file', (req, res) ->
 
     progress = 0
 
+    res.writeHead(200, {'Content-Type': 'text/html'})
+
     headers = {
       'Content-Type': part.mime
       'Content-Length': file_length
@@ -51,11 +59,15 @@ app.post '/file', (req, res) ->
       console.log(s3res.headers)
       s3res.pipe(process.stdout, {end: false})
       console.error('s3 callback', s3req.url)
-      res.status(201).send(s3req.url)
+      res.write(s3req.url)
+      res.end()
 
-    s3req.on('progress', console.log);
+    s3req.on('progress', (data) ->
+      io.sockets.in(upload_id).emit('progress', data))
 
-    part.on('data', (buffer) ->)
-      # console.log(progress += buffer.length))
-
+    part.on('data', (buffer) ->
+      # keep the connection alive
+      res.write('')
+      console.log(progress += buffer.length))
+    
     part.on('end', () ->)

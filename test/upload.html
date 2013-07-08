@@ -2,11 +2,8 @@
 <html lang="en" >
   <head>
     <meta charset="utf-8" />
-    <script src="upload.js"></script>
     <script src="http://localhost:5000/socket.io/socket.io.js"></script>
-    <script>
-      var socket = io.connect('http://localhost:5000');
-    </script>
+    <script src="upload.js"></script>
     <title>File upload</title>
   </head>
   <body>
@@ -19,5 +16,6 @@
         <input type="submit" value="Upload" />
       </div>
     </form>
+    <div id="progress"></div>
   </body>
 </html>
