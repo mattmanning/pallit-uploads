@@ -5,42 +5,24 @@ StringDecoder = require('string_decoder').StringDecoder
 util          = require("util")
 uuid          = require('node-uuid')
 
-app = express()
-
-app.use(express.bodyParser({'defer': true}))
-
-http    = require('http')
-server  = http.createServer(app)
-io      = require('socket.io').listen(server)
-
-io.configure(() ->
-  io.set("transports", ["xhr-polling"])
-  io.set("polling duration", 10)
-)
-
-server.listen(process.env.PORT || 5000)
-
 knox = require('knox').createClient
   key:    process.env.AWS_ACCESS_KEY_ID
   secret: process.env.AWS_SECRET_ACCESS_KEY
   bucket: process.env.S3_BUCKET
 
-# io.sockets.on('connection', (socket) ->
-#   upload_id = uuid.v4()
-#   socket.join(upload_id)
-#   socket.emit('upload_id', upload_id)
-#   console.log('A socket connected!'))
+app = express()
+app.use(express.bodyParser({'defer': true}))
 
 app.get "/", (req, res) ->
   res.send "ok"
 
-app.post '/file/:upload_id', (req, res) ->
-  upload_id = req.params.upload_id
+app.post '/file', (req, res) ->
+  # upload_id = req.params.upload_id
   # get the node-formidable form
   form = req.form
   file_length = ''
   form.onPart = (part) ->
-    if (!part.filename && (part.name == 'fsize'))
+    if (!part.filename && (part.name == 'file-size'))
       value = ''
       decoder = new StringDecoder(this.encoding);
       part.on('data', (buffer) ->
@@ -68,12 +50,15 @@ app.post '/file/:upload_id', (req, res) ->
       res.end()
 
     s3req.on('progress', (data) ->
-      #io.sockets.in(upload_id).emit('progress', data))
       res.write(data + "\n"))
 
     part.on('data', (buffer) ->
       # keep the connection alive
-      # res.write('')
+      res.write('')
       console.log(progress += buffer.length))
     
     part.on('end', () ->)
+
+app.listen(process.env.PORT || 5000)
+
+    
