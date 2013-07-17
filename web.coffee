@@ -13,6 +13,10 @@ knox = require('knox').createClient
 app = express()
 app.use(express.bodyParser({'defer': true}))
 
+app.all '/*', (req, res, next) ->
+  res.header("Access-Control-Allow-Origin", "*")
+  next()
+
 app.get "/", (req, res) ->
   res.send "ok"
 
