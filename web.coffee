@@ -5,42 +5,39 @@ StringDecoder = require('string_decoder').StringDecoder
 util          = require("util")
 uuid          = require('node-uuid')
 
-app = express()
-
-app.use(express.bodyParser({'defer': true}))
-
-http    = require('http')
-server  = http.createServer(app)
-io      = require('socket.io').listen(server)
-
-io.configure(() ->
-  io.set("transports", ["xhr-polling"])
-  io.set("polling duration", 10)
-)
-
-server.listen(process.env.PORT || 5000)
-
 knox = require('knox').createClient
   key:    process.env.AWS_ACCESS_KEY_ID
   secret: process.env.AWS_SECRET_ACCESS_KEY
   bucket: process.env.S3_BUCKET
 
-io.sockets.on('connection', (socket) ->
-  upload_id = uuid.v4()
-  socket.join(upload_id)
-  socket.emit('upload_id', upload_id)
-  console.log('A socket connected!'))
+if (process.env.REDISTOGO_URL)
+  rtg   = require("url").parse(process.env.REDISTOGO_URL)
+  redis = require("redis").createClient(rtg.port, rtg.hostname)
+  redis.auth(rtg.auth.split(":")[1])
+else
+  redis = require("redis").createClient()
 
-app.get "/", (req, res) ->
+app = express()
+app.use(express.bodyParser({'defer': true}))
+
+app.all '/*', (req, res, next) ->
+  res.header("Access-Control-Allow-Origin", "*")
+  next()
+
+app.get '/', (req, res) ->
   res.send "ok"
 
-app.post '/file/:upload_id', (req, res) ->
-  upload_id = req.params.upload_id
+app.post '/key', (req, res) ->
+  key = uuid.v4()
+  redis.setex(key, 1800, '', (err, reply) ->
+    res.send(201, key))
+
+app.post '/file', (req, res) ->
   # get the node-formidable form
   form = req.form
   file_length = ''
   form.onPart = (part) ->
-    if (!part.filename && (part.name == 'fsize'))
+    if (!part.filename && (part.name == 'file-size'))
       value = ''
       decoder = new StringDecoder(this.encoding);
       part.on('data', (buffer) ->
@@ -68,7 +65,7 @@ app.post '/file/:upload_id', (req, res) ->
       res.end()
 
     s3req.on('progress', (data) ->
-      io.sockets.in(upload_id).emit('progress', data))
+      res.write(data + "\n"))
 
     part.on('data', (buffer) ->
       # keep the connection alive
@@ -76,3 +73,5 @@ app.post '/file/:upload_id', (req, res) ->
       console.log(progress += buffer.length))
     
     part.on('end', () ->)
+
+app.listen(process.env.PORT || 5000)

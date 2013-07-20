@@ -2,20 +2,24 @@
 <html lang="en" >
   <head>
     <meta charset="utf-8" />
-    <script src="http://localhost:5000/socket.io/socket.io.js"></script>
-    <script src="upload.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>
+    <script src="pallit.js"></script>
     <title>File upload</title>
   </head>
   <body>
-    <form enctype="multipart/form-data" method="post" name="upload" action="http://localhost:5000/file">
-      <div>
-        <div><label for="data">Please select file:</label></div>
-        <div><input type="file" name="data" id="data" onchange="fileSelected();" /></div>
-      </div>
-      <div>
-        <input type="submit" value="Upload" />
-      </div>
-    </form>
-    <div id="progress"></div>
+    <div>
+      <form enctype="multipart/form-data" name="upload" class="pallit">
+        <div>
+          <div><label for="myfile">Please select file:</label></div>
+          <div><input type="file" name="myfile" id="myfile" /></div>
+        </div>
+        <div>
+          <input type="submit" value="Upload" />
+        </div>
+      </form>
+    </div>
+    <div id="progress">
+      <progress></progress>
+    </div>
   </body>
 </html>
