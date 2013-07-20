@@ -71,5 +71,3 @@ app.post '/file', (req, res) ->
     part.on('end', () ->)
 
 app.listen(process.env.PORT || 5000)
-
-    
