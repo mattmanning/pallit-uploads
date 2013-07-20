@@ -24,11 +24,15 @@ app.all '/*', (req, res, next) ->
   res.header("Access-Control-Allow-Origin", "*")
   next()
 
-app.get "/", (req, res) ->
+app.get '/', (req, res) ->
   res.send "ok"
 
+app.post '/key', (req, res) ->
+  key = uuid.v4()
+  redis.setex(key, 1800, '', (err, reply) ->
+    res.send(201, key))
+
 app.post '/file', (req, res) ->
-  # upload_id = req.params.upload_id
   # get the node-formidable form
   form = req.form
   file_length = ''
