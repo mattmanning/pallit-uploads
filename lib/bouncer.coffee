@@ -1,6 +1,6 @@
 uuid = require('node-uuid')
 
-class Ostiary
+class Bouncer
 
   constructor: () ->
     if (process.env.REDISTOGO_URL)
@@ -16,4 +16,4 @@ class Ostiary
       cb null, key
 
 module.exports.init = () ->
-  new Ostiary()
+  new Bouncer()

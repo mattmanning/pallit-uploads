@@ -3,7 +3,7 @@ express       = require("express")
 fs            = require("fs")
 StringDecoder = require('string_decoder').StringDecoder
 util          = require("util")
-ostiary       = require('./lib/ostiary').init()
+bouncer       = require('./lib/bouncer').init()
 
 knox = require('knox').createClient
   key:    process.env.AWS_ACCESS_KEY_ID
@@ -21,7 +21,7 @@ app.get '/', (req, res) ->
   res.send "ok"
 
 app.post '/key', (req, res) ->
-  ostiary.create_key (err, key) ->
+  bouncer.create_key (err, key) ->
     if err
       res.send(400, err)
     else
