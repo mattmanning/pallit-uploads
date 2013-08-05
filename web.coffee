@@ -3,19 +3,12 @@ express       = require("express")
 fs            = require("fs")
 StringDecoder = require('string_decoder').StringDecoder
 util          = require("util")
-uuid          = require('node-uuid')
+ostiary       = require('./lib/ostiary').init()
 
 knox = require('knox').createClient
   key:    process.env.AWS_ACCESS_KEY_ID
   secret: process.env.AWS_SECRET_ACCESS_KEY
   bucket: process.env.S3_BUCKET
-
-if (process.env.REDISTOGO_URL)
-  rtg   = require("url").parse(process.env.REDISTOGO_URL)
-  redis = require("redis").createClient(rtg.port, rtg.hostname)
-  redis.auth(rtg.auth.split(":")[1])
-else
-  redis = require("redis").createClient()
 
 app = express()
 app.use(express.bodyParser({'defer': true}))
@@ -28,9 +21,11 @@ app.get '/', (req, res) ->
   res.send "ok"
 
 app.post '/key', (req, res) ->
-  key = uuid.v4()
-  redis.setex(key, 1800, '', (err, reply) ->
-    res.send(201, key))
+  ostiary.create_key (err, key) ->
+    if err
+      res.send(400, err)
+    else
+      res.send(201, key)
 
 app.post '/file', (req, res) ->
   # get the node-formidable form
