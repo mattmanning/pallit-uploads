@@ -1,7 +1,7 @@
 bouncer       = require('./lib/bouncer').init()
 coffee        = require("coffee-script")
 express       = require("express")
-file_handler  = require('./lib/file_handler').init()
+FileHandler   = require('./lib/file_handler')
 
 app = express()
 app.use(express.bodyParser({'defer': true}))
@@ -26,6 +26,6 @@ app.post '/key', (req, res) ->
 app.post '/file', (req, res) ->
   # get the node-formidable form
   form = req.form
-  form.onPart = file_handler.basic_upload(res)
+  form.onPart = FileHandler.basic_upload(res)
 
 app.listen(process.env.PORT || 5000)
